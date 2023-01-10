@@ -50,7 +50,12 @@ const configuration: webpack.Configuration = {
     'webpack/hot/only-dev-server',
     path.join(webpackPaths.srcRendererPath, 'index.tsx'),
   ],
-
+  resolve: {
+    fallback: {
+        "fs": false,
+        // "assert": false
+    },
+  },
   output: {
     path: webpackPaths.distRendererPath,
     publicPath: '/',
@@ -63,7 +68,7 @@ const configuration: webpack.Configuration = {
   module: {
     rules: [
       {
-        test: /\.s?(c|a)ss$/,
+        test: /\.s?css$/,
         use: [
           'style-loader',
           {
@@ -80,38 +85,26 @@ const configuration: webpack.Configuration = {
       },
       {
         test: /\.s?css$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-        exclude: /\.module\.s?(c|a)ss$/,
-      },
-      // Fonts
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        type: 'asset/resource',
-      },
-      // Images
-      {
-        test: /\.(png|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
-      },
-      // SVG
-      {
-        test: /\.svg$/,
         use: [
+          'style-loader',
+          'css-loader',
+          'sass-loader',
           {
-            loader: '@svgr/webpack',
+            loader: 'postcss-loader',
             options: {
-              prettier: false,
-              svgo: false,
-              svgoConfig: {
-                plugins: [{ removeViewBox: false }],
+            postcssOptions: {
+              plugins:
+                [
+                  require('tailwindcss'),
+                  require('autoprefixer'),
+                ]
               },
-              titleProp: true,
-              ref: true,
             },
           },
-          'file-loader',
         ],
+        exclude: /\.module\.s?(c|a)ss$/,
       },
+      // ...
     ],
   },
   plugins: [
@@ -161,6 +154,9 @@ const configuration: webpack.Configuration = {
       env: process.env.NODE_ENV,
       isDevelopment: process.env.NODE_ENV !== 'production',
       nodeModules: webpackPaths.appNodeModulesPath,
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
     }),
   ],
 

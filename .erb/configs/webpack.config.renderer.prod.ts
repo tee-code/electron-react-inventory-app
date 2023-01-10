@@ -35,7 +35,12 @@ const configuration: webpack.Configuration = {
       type: 'umd',
     },
   },
-
+  resolve: {
+    fallback: {
+        "fs": false,
+        // "assert": false
+    },
+  },
   module: {
     rules: [
       {
@@ -56,38 +61,26 @@ const configuration: webpack.Configuration = {
       },
       {
         test: /\.s?(a|c)ss$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
-        exclude: /\.module\.s?(c|a)ss$/,
-      },
-      // Fonts
-      {
-        test: /\.(woff|woff2|eot|ttf|otf)$/i,
-        type: 'asset/resource',
-      },
-      // Images
-      {
-        test: /\.(png|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
-      },
-      // SVG
-      {
-        test: /\.svg$/,
         use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader',
           {
-            loader: '@svgr/webpack',
+            loader: 'postcss-loader',
             options: {
-              prettier: false,
-              svgo: false,
-              svgoConfig: {
-                plugins: [{ removeViewBox: false }],
+            postcssOptions: {
+              plugins:
+                [
+                  require('tailwindcss'),
+                  require('autoprefixer'),
+                ]
               },
-              titleProp: true,
-              ref: true,
             },
           },
-          'file-loader',
         ],
+        exclude: /\.module\.s?(c|a)ss$/,
       },
+      // ...
     ],
   },
 
@@ -140,6 +133,9 @@ const configuration: webpack.Configuration = {
     new webpack.DefinePlugin({
       'process.type': '"renderer"',
     }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+}),
   ],
 };
 
